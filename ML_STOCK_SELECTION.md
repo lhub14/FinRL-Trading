@@ -61,14 +61,8 @@ datadate    tradedate    trade_price    y_return = ln(next/this)
 | `ln(adj_close_q[t+1] / adj_close_q[t])` | adj_close_q is the quarter-end price; the investor cannot buy at quarter-end because the report isn't public yet | Use `trade_price` (price at tradedate) |
 | `ln(price_2025-12-31 / price_2025-09-30)` | On 2025-09-30 the Q3 report is not yet public; you can't act on it until tradedate 2025-12-01 | Buy at tradedate, not quarter-end |
 | y_return = 0 | Frozen price from delisted ticker whose adj_close_q was never updated | Set to NULL |
+| y_return calculated across a stock split without split-adjustment | Raw close prices jump on split date, inflating/deflating return | Always confirm `adjClose` is split-adjusted before computing |
 
-> **Personal note:** I initially made the `adj_close_q` mistake on my first pass — the NULL-vs-zero distinction for delisted tickers also caught me off guard. Worth double-checking both before every fresh data pull.
+> **Personal note:** I initially made the `adj_close_q` mistake on my first pass — the NULL-vs-zero distinction for delisted tickers also caught me off guard. Worth double-checking both before every fresh data pull. Also added the split-adjustment row above after running into a 2-for-1 NVDA split edge case that produced a spurious -50% y_return.
 
-### Pre-Run Verification (MUST execute before every model run)
-
-```python
-import sqlite3, pandas as pd, numpy as np
-conn = sqlite3.connect('data/finrl_trading.db')
-df = pd.read_sql('''
-    SELECT ticker, datadate, trade
-```
+###
